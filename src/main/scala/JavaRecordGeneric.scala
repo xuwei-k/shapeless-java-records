@@ -18,22 +18,24 @@ class JavaRecordGeneric(val c: whitebox.Context) extends shapeless.CaseClassMacr
     val clazz = Class.forName(name)
 
     if (clazz.isRecord) {
-      val methods = tpe.decls.toList collect {
-        case sym: MethodSymbol if sym.isMethod && sym.isPublic => sym
-      }
-      val recordNames = clazz.getRecordComponents.map(_.getName).toSet
+      val methods = tpe.decls.collect {
+        case sym: MethodSymbol if sym.isMethod && sym.isPublic =>
+          sym.name.toString -> sym
+      }.toMap
 
-      val fields = methods
-        .withFilter(m => recordNames(m.name.toString))
-        .map { m =>
-          Field(m.name.toString, m)
-        }
-        .toList
+      val recordComponents = clazz.getRecordComponents.toList
+
+      val fields = recordComponents.map { c =>
+        val fieldName = c.getName
+        val m = methods.getOrElse(fieldName, sys.error(s"not found $fieldName in ${methods.keys.toList}"))
+        Field(fieldName, m)
+      }
+
       val reprType = mkHListTypTree(fields.map(_.method.typeSignatureIn(tpe).finalResultType))
 
       val toParamName, fromParamName = TermName(c.freshName("a"))
 
-      val toImpl = fields.reverse.foldLeft(q"_root_.shapeless.HNil": Tree) { case (acc, field) =>
+      val toImpl = fields.reverseIterator.foldLeft(q"_root_.shapeless.HNil": Tree) { case (acc, field) =>
         val t = Select(Ident(toParamName), TermName(field.name))
         q"$t :: $acc"
       }
