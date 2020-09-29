@@ -7,13 +7,31 @@ object JavaRecordGeneric {
   implicit def javaRecordGeneric[A]: Generic[A] =
     macro JavaRecordGeneric.genericImpl[A]
 
-  implicit def javaRecordSymbolicLabelling[A]: DefaultSymbolicLabelling[A] =
-    macro JavaRecordGeneric.defaultSymbolicLabellingImpl[A]
+  object symbol {
+    implicit def javaRecordSymbolLabel[A]: DefaultSymbolicLabelling[A] =
+      macro JavaRecordGeneric.symbolImpl[A]
+  }
+
+  object string {
+    implicit def javaRecordStringLabel[A]: DefaultSymbolicLabelling[A] =
+      macro JavaRecordGeneric.stringImpl[A]
+  }
+
+  private sealed abstract class KeyType extends Product with Serializable
+  private case object StringKey extends KeyType
+  private case object SymbolKey extends KeyType
 }
 
 class JavaRecordGeneric(val c: whitebox.Context) extends shapeless.CaseClassMacros with shapeless.SingletonTypeUtils {
+  import JavaRecordGeneric._
 
-  def defaultSymbolicLabellingImpl[A](implicit tTag: c.WeakTypeTag[A]): c.Tree = {
+  def symbolImpl[A: c.WeakTypeTag]: c.Tree =
+    defaultSymbolicLabellingImpl[A](SymbolKey)
+
+  def stringImpl[A: c.WeakTypeTag]: c.Tree =
+    defaultSymbolicLabellingImpl[A](StringKey)
+
+  private def defaultSymbolicLabellingImpl[A](keyType: KeyType)(implicit tTag: c.WeakTypeTag[A]): c.Tree = {
     import c.universe._
     val tpe = weakTypeOf[A]
     val name = tpe.toString
@@ -21,8 +39,22 @@ class JavaRecordGeneric(val c: whitebox.Context) extends shapeless.CaseClassMacr
 
     if (clazz.isRecord) {
       val labels = clazz.getRecordComponents.map(_.getName).toList
-      val labelTypes = labels.map(SingletonSymbolType(_))
-      val labelValues = labels.map(mkSingletonSymbol)
+      val labelTypes = {
+        keyType match {
+          case StringKey =>
+            labels.map(s => c.internal.constantType(Constant(s)))
+          case SymbolKey =>
+            labels.map(SingletonSymbolType(_))
+        }
+      }
+      val labelValues = {
+        keyType match {
+          case StringKey =>
+            labels.map(s => q"$s")
+          case SymbolKey =>
+            labels.map(mkSingletonSymbol)
+        }
+      }
       val labelsType = mkHListTpe(labelTypes)
       val labelsValue = mkHListValue(labelValues)
 

@@ -24,6 +24,7 @@ class JavaRecordGenericTest {
   def labelledGenericTest1: Unit = {
     val labelledGen = {
       import JavaRecordGeneric._
+      import JavaRecordGeneric.symbol._
       LabelledGeneric[foo.A]
     }
     val record = labelledGen.to(a1)
