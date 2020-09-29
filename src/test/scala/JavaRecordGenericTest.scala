@@ -21,7 +21,7 @@ class JavaRecordGenericTest {
   }
 
   @Test
-  def labelledGenericTest1: Unit = {
+  def labelledGenericSymbolTest: Unit = {
     val labelledGen = {
       import JavaRecordGeneric._
       import JavaRecordGeneric.symbol._
@@ -32,6 +32,22 @@ class JavaRecordGenericTest {
     assert(record(Symbol("x")) == 2)
     assert(record(Symbol("y")) == "a")
     assert(record(Symbol("z")) == JavaList.of("b", "c"))
+    val a2 = labelledGen.from(record)
+    assert(a1 == a2)
+  }
+
+  @Test
+  def labelledGenericStringTest: Unit = {
+    val labelledGen = {
+      import JavaRecordGeneric._
+      import JavaRecordGeneric.string._
+      LabelledGeneric[foo.A]
+    }
+    val record = labelledGen.to(a1)
+    import shapeless.record._
+    assert(record("x") == 2)
+    assert(record("y") == "a")
+    assert(record("z") == JavaList.of("b", "c"))
     val a2 = labelledGen.from(record)
     assert(a1 == a2)
   }

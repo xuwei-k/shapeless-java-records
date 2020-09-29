@@ -22,7 +22,10 @@ object JavaRecordGeneric {
   private case object SymbolKey extends KeyType
 }
 
-class JavaRecordGeneric(val c: whitebox.Context) extends shapeless.CaseClassMacros with shapeless.SingletonTypeUtils {
+class JavaRecordGeneric(val c: whitebox.Context)
+    extends shapeless.CaseClassMacros
+    with shapeless.SingletonTypeUtils
+    with JavaRecordGenericCompat {
   import JavaRecordGeneric._
 
   def symbolImpl[A: c.WeakTypeTag]: c.Tree =
@@ -61,7 +64,7 @@ class JavaRecordGeneric(val c: whitebox.Context) extends shapeless.CaseClassMacr
       q"""
       (new _root_.shapeless.DefaultSymbolicLabelling[$tpe] {
         override type Out = $labelsType
-        override def apply(): $labelsType = $labelsValue
+        override def apply(): $labelsType = ${castIfScala212(labelsValue, labelsType)}
       }) : _root_.shapeless.DefaultSymbolicLabelling.Aux[$tpe, $labelsType]
     """
     } else {
