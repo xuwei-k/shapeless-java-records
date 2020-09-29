@@ -18,10 +18,12 @@ class JavaRecordGeneric(val c: whitebox.Context) extends shapeless.CaseClassMacr
     val clazz = Class.forName(name)
 
     if (clazz.isRecord) {
-      val methods = tpe.decls.collect {
+      val methodsList = tpe.decls.collect {
         case sym: MethodSymbol if sym.isMethod && sym.isPublic && sym.paramLists.forall(_.isEmpty) =>
           sym.name.toString -> sym
-      }.toMap
+      }.toList
+      val methods = methodsList.toMap
+      assert(methodsList.size == methods.size, methodsList)
 
       val recordComponents = clazz.getRecordComponents.toList
 
