@@ -9,5 +9,6 @@ jobs:
     - uses: olafurpg/setup-scala@v6
       with:
         java-version: openjdk@1.14
+    - uses: coursier/cache-action@v4.1
     - name: test
       run: sbt -v -J--enable-preview scalafmtCheckAll scalafmtSbtCheck +test
