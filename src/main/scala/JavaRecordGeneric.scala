@@ -19,7 +19,7 @@ class JavaRecordGeneric(val c: whitebox.Context) extends shapeless.CaseClassMacr
 
     if (clazz.isRecord) {
       val methods = tpe.decls.collect {
-        case sym: MethodSymbol if sym.isMethod && sym.isPublic =>
+        case sym: MethodSymbol if sym.isMethod && sym.isPublic && sym.paramLists.forall(_.isEmpty) =>
           sym.name.toString -> sym
       }.toMap
 
