@@ -40,8 +40,14 @@ class JavaRecordGeneric(val c: whitebox.Context)
     val name = tpe.toString
     val clazz = Class.forName(name)
 
-    if (clazz.isRecord) {
-      val labels = clazz.getRecordComponents.map(_.getName).toList
+    if (clazz.isSealed || clazz.isRecord) {
+      val labels = {
+        if (clazz.isRecord) {
+          clazz.getRecordComponents.map(_.getName)
+        } else {
+          clazz.permittedSubclasses.map(_.displayName)
+        }
+      }.toList
       val labelTypes = {
         keyType match {
           case StringKey =>
@@ -68,7 +74,7 @@ class JavaRecordGeneric(val c: whitebox.Context)
       }) : _root_.shapeless.DefaultSymbolicLabelling.Aux[$tpe, $labelsType]
     """
     } else {
-      c.error(c.enclosingPosition, s"$name is not record")
+      c.error(c.enclosingPosition, s"$name is not record or sealed")
       q"_root_.scala.Predef.???"
     }
   }

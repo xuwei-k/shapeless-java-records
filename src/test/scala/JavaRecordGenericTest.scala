@@ -70,4 +70,18 @@ class JavaRecordGenericTest {
     val a2 = labelledGen.from(record)
     assert(a1 == a2)
   }
+
+  @Test
+  def labelledGenericSealed: Unit = {
+    val gen = {
+      import JavaRecordGeneric._
+      import JavaRecordGeneric.string._
+      LabelledGeneric[foo.Base]
+    }
+    val x = gen.to(a1)
+    typed[shapeless.union.Union.`"A" -> foo.A, "B" -> foo.B`.T](x)
+    import shapeless.union._
+    assert(x.get("A") == Some(a1))
+    assert(x.get("B") == None)
+  }
 }
