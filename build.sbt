@@ -1,4 +1,9 @@
+import ReleaseTransformations._
+
 javacOptions ++= Seq("--enable-preview", "--release", "15")
+
+organization := "com.github.xuwei-k"
+name := "shapeless-java-records"
 
 val Scala213 = "2.13.3"
 
@@ -14,3 +19,43 @@ libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
 compileOrder := CompileOrder.JavaThenScala
 
 scalacOptions += "-deprecation"
+
+homepage := Some(url("https://github.com/xuwei-k/shapeless-java-records"))
+
+licenses := Seq(
+  "MIT License" -> url("https://raw.githubusercontent.com/xuwei-k/shapeless-java-records/main/LICENSE.txt"),
+)
+
+description := "derive shapeless.Generic instances for Java Records and Sealed Classes"
+
+pomExtra := (
+  <developers>
+    <developer>
+      <id>xuwei-k</id>
+      <name>Kenji Yoshida</name>
+      <url>https://github.com/xuwei-k</url>
+    </developer>
+  </developers>
+  <scm>
+    <url>git@github.com:xuwei-k/shapeless-java-records.git</url>
+    <connection>scm:git:git@github.com:xuwei-k/shapeless-java-records.git</connection>
+  </scm>
+)
+
+publishTo := sonatypePublishToBundle.value
+
+releaseCrossBuild := true
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  releaseStepCommandAndRemaining("+publishSigned"),
+  releaseStepCommandAndRemaining("sonatypeBundleRelease"),
+  setNextVersion,
+  commitNextVersion,
+  pushChanges,
+)
