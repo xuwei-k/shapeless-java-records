@@ -1,8 +1,11 @@
+package example
+
 import java.util.{List => JavaList}
 import org.junit.Test
 import shapeless.:+:
 import shapeless.Generic
 import shapeless.LabelledGeneric
+import shapeless.JavaRecordGeneric
 
 class JavaRecordGenericTest {
   private val a1 = new foo.A(2, "a", JavaList.of("b", "c"))

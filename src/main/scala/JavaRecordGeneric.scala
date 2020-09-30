@@ -1,4 +1,4 @@
-import shapeless._
+package shapeless
 
 import scala.language.experimental.macros
 import scala.reflect.macros.whitebox
