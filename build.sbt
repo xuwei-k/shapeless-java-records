@@ -1,4 +1,4 @@
-javacOptions ++= Seq("--enable-preview", "--release", "14")
+javacOptions ++= Seq("--enable-preview", "--release", "15")
 
 val Scala213 = "2.13.3"
 

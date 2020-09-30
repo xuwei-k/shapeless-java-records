@@ -1,10 +1,26 @@
 import java.util.{List => JavaList}
 import org.junit.Test
+import shapeless.:+:
 import shapeless.Generic
 import shapeless.LabelledGeneric
 
 class JavaRecordGenericTest {
   private val a1 = new foo.A(2, "a", JavaList.of("b", "c"))
+
+  private def typed[A](a: A): Unit = ()
+
+  @Test
+  def sealedTest1: Unit = {
+    import JavaRecordGeneric._
+    val gen = Generic[foo.Base]
+    val b1 = new foo.B(true, Long.MaxValue)
+    val coproductA = gen.to(a1)
+    val coproductB = gen.to(b1)
+    typed[foo.A :+: foo.B :+: shapeless.CNil](coproductA)
+    typed[foo.A :+: foo.B :+: shapeless.CNil](coproductB)
+    assert(gen.from(coproductA) == a1)
+    assert(gen.from(coproductB) == b1)
+  }
 
   @Test
   def genericTest1: Unit = {
