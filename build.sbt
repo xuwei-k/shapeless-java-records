@@ -59,3 +59,14 @@ releaseProcess := Seq[ReleaseStep](
   commitNextVersion,
   pushChanges,
 )
+
+scalacOptions in (Compile, doc) ++= {
+  val hash = sys.process.Process("git rev-parse HEAD").lineStream_!.head
+  val base = (baseDirectory in LocalRootProject).value.getAbsolutePath
+  Seq(
+    "-sourcepath",
+    base,
+    "-doc-source-url",
+    "https://github.com/xuwei-k/shapeless-java-records/tree/" + hash + "€{FILE_PATH}.scala"
+  )
+}
