@@ -41,4 +41,5 @@ import shapeless.JavaRecordGeneric.string._ // string label
 // or import shapeless.JavaRecordGeneric.symbol._
 
 LabelledGeneric[YourJavaRecordType]
+LabelledGeneric[YourJavaSealedType]
 ```
