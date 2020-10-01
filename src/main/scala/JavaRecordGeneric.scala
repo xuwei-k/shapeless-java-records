@@ -74,7 +74,7 @@ class JavaRecordGeneric(val c: whitebox.Context)
       }) : _root_.shapeless.DefaultSymbolicLabelling.Aux[$tpe, $labelsType]
     """
     } else {
-      c.error(c.enclosingPosition, s"$name is not record or sealed")
+      c.error(c.enclosingPosition, s"$name is neither record nor sealed")
       q"_root_.scala.Predef.???"
     }
   }
@@ -124,7 +124,7 @@ class JavaRecordGeneric(val c: whitebox.Context)
     } else if (clazz.isRecord) {
       genericRecordImpl(weakTypeOf[A])
     } else {
-      c.error(c.enclosingPosition, s"$name is not record or sealed")
+      c.error(c.enclosingPosition, s"$name is neither record nor sealed")
       q"_root_.scala.Predef.???"
     }
   }
