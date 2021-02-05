@@ -2,6 +2,7 @@ package shapeless
 
 import scala.language.experimental.macros
 import scala.reflect.macros.whitebox
+import java.lang.constant.ClassDesc
 
 object JavaRecordGeneric {
   implicit def javaRecordGeneric[A]: Generic[A] =
@@ -20,6 +21,27 @@ object JavaRecordGeneric {
   private sealed abstract class KeyType extends Product with Serializable
   private case object StringKey extends KeyType
   private case object SymbolKey extends KeyType
+
+  /**
+   * for JDK15 compatibility
+   * [[https://github.com/openjdk/jdk/commit/637b0c64b0a5d67d31b4b61dee55e8d682790da0#diff-a6270f4b50989abe733607c69038b2036306d13f77276af005d023b7fc57f1a2R4424]]
+   */
+  private implicit class GetPermittedSubclassesCompat(private val self: Class[_]) extends AnyVal {
+    import scala.language.reflectiveCalls
+    def getPermittedSubClassDescList: Array[ClassDesc] = {
+      try {
+        // jdk16 or later
+        self.asInstanceOf[{ def getPermittedSubclasses: Array[Class[_]] }].getPermittedSubclasses.flatMap { c =>
+          val x = c.asInstanceOf[{ def describeConstable: java.util.Optional[ClassDesc] }].describeConstable
+          if (x.isPresent) Some(x.get) else None
+        }
+      } catch {
+        case e: NoSuchMethodException =>
+          // jdk15
+          self.asInstanceOf[{ def permittedSubclasses: Array[ClassDesc] }].permittedSubclasses
+      }
+    }
+  }
 }
 
 class JavaRecordGeneric(val c: whitebox.Context)
@@ -45,7 +67,7 @@ class JavaRecordGeneric(val c: whitebox.Context)
         if (clazz.isRecord) {
           clazz.getRecordComponents.map(_.getName)
         } else {
-          clazz.permittedSubclasses.map(_.displayName)
+          clazz.getPermittedSubClassDescList.map(_.displayName)
         }
       }.toList
       val labelTypes = {
@@ -84,7 +106,7 @@ class JavaRecordGeneric(val c: whitebox.Context)
     val name = tpe.toString
     val clazz = Class.forName(name)
 
-    val subTypes = clazz.permittedSubclasses.map { subClassDesc =>
+    val subTypes = clazz.getPermittedSubClassDescList.map { subClassDesc =>
       val subClassName = subClassDesc.packageName + "." + subClassDesc.displayName
       parseType(subClassName).getOrElse {
         abort(s"could not found $subClassName")
