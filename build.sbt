@@ -9,7 +9,7 @@ val Scala213 = "2.13.4"
 
 scalaVersion := Scala213
 
-crossScalaVersions := Seq(Scala213, "2.12.12")
+crossScalaVersions := Seq(Scala213, "2.12.13")
 
 libraryDependencies += "com.chuusai" %% "shapeless" % "2.3.3"
 libraryDependencies += scalaOrganization.value % "scala-reflect" % scalaVersion.value
