@@ -1,8 +1,6 @@
 import ReleaseTransformations._
 
-def jdkVersion: String = sys.props.get("jdk_version").flatMap(_.split('-').headOption).getOrElse("15")
-
-javacOptions ++= Seq("--enable-preview", "--release", jdkVersion)
+javacOptions ++= Seq("--enable-preview", "--release", scala.util.Properties.javaSpecVersion)
 
 organization := "com.github.xuwei-k"
 name := "shapeless-java-records"
