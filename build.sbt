@@ -60,9 +60,9 @@ releaseProcess := Seq[ReleaseStep](
   pushChanges,
 )
 
-scalacOptions in (Compile, doc) ++= {
+(Compile / doc / scalacOptions) ++= {
   val hash = sys.process.Process("git rev-parse HEAD").lineStream_!.head
-  val base = (baseDirectory in LocalRootProject).value.getAbsolutePath
+  val base = (LocalRootProject / baseDirectory).value.getAbsolutePath
   Seq(
     "-sourcepath",
     base,
