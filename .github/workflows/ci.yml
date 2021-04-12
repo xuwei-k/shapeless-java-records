@@ -16,6 +16,7 @@ jobs:
     - uses: actions/setup-java@v2
       with:
         java-version: ${{matrix.java}}
+        distribution: adopt
     - uses: coursier/cache-action@v6
     - name: install sbt
       run: curl -Ls https://git.io/sbt > ./sbt && chmod 0755 ./sbt
