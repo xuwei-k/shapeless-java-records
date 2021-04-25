@@ -22,4 +22,4 @@ jobs:
     - name: install sbt
       run: curl -Ls https://git.io/sbt > ./sbt && chmod 0755 ./sbt
     - name: test
-      run: ./sbt -v -J--enable-preview scalafmtCheckAll scalafmtSbtCheck +test
+      run: ./sbt -v -J--enable-preview "+scalafmtCheckAll" scalafmtSbtCheck +test
