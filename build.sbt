@@ -7,12 +7,11 @@ name := "shapeless-java-records"
 
 val Scala213 = "2.13.5"
 
-scalaVersion := Scala213
+scalaVersion := "3.0.0-RC3"
 
 crossScalaVersions := Seq(Scala213, "2.12.13")
 
-libraryDependencies += "com.chuusai" %% "shapeless" % "2.3.5"
-libraryDependencies += scalaOrganization.value % "scala-reflect" % scalaVersion.value
+libraryDependencies += "org.typelevel" %% "shapeless3-deriving" % "3.0.0-M3"
 libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
 
 // https://github.com/scala/bug/issues/11908

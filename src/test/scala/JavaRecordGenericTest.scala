@@ -1,87 +1,43 @@
 package example
 
 import java.util.{List => JavaList}
+import shapeless3.deriving.K0.*
 import org.junit.Test
-import shapeless.:+:
-import shapeless.Generic
-import shapeless.LabelledGeneric
-import shapeless.JavaRecordGeneric
+import scala.quoted.*
+import scala.jdk.OptionConverters._
 
-class JavaRecordGenericTest {
-  private val a1 = new foo.A(2, "a", JavaList.of("b", "c"))
-
+object JavaRecordGenericTest {
   private def typed[A](a: A): Unit = ()
 
-  @Test
-  def sealedTest1: Unit = {
-    import JavaRecordGeneric._
-    val gen = Generic[foo.Base]
-    val b1 = new foo.B(true, Long.MaxValue)
-    val coproductA = gen.to(a1)
-    val coproductB = gen.to(b1)
-    typed[foo.A :+: foo.B :+: shapeless.CNil](coproductA)
-    typed[foo.A :+: foo.B :+: shapeless.CNil](coproductB)
-    assert(gen.from(coproductA) == a1)
-    assert(gen.from(coproductB) == b1)
-  }
+  transparent inline def javaInstance[A]: deriving.Mirror.Sum = ${ javaInstanceImpl[A] }
+  transparent inline given javaInstanceGiven[A]: deriving.Mirror.Sum = ${ javaInstanceImpl[A] }
 
-  @Test
-  def genericTest1: Unit = {
-    import JavaRecordGeneric._
-    val gen = Generic[foo.A]
-    val list = gen.to(a1)
-    assert(list(0) == 2)
-    assert(list(1) == "a")
-    assert(list(2) == JavaList.of("b", "c"))
-    println(list)
-    val a2 = gen.from(list)
-    println(a2)
-    assert(a1 == a2)
-  }
+  def javaInstanceImpl[A](using a: Type[A], q: Quotes): Expr[deriving.Mirror.Sum] = {
+    import q.reflect._
+    val aa = q.reflect.TypeRepr.of[A]
+    val name = aa.show
+    val clazz = Class.forName(name)
+    val subClasses = clazz.getPermittedSubclasses.flatMap(_.describeConstable.toScala).map{ desc =>
+      desc.packageName + "." + desc.displayName
+    }.toList
 
-  @Test
-  def labelledGenericSymbolTest: Unit = {
-    val labelledGen = {
-      import JavaRecordGeneric._
-      import JavaRecordGeneric.symbol._
-      LabelledGeneric[foo.A]
+    println(subClasses)
+
+    val x = aa.typeSymbol.fullName
+    println(x)
+    def c(s: String) = ConstantType(StringConstant(s)).asType
+
+    c(name.split('.').last) match {
+      case '[t] =>
+        '{
+          new scala.deriving.Mirror.Sum {
+            override def ordinal(p: t): Int = ???
+            override type MirroredMonoType = t
+            override type MirroredElemLabels = EmptyTuple
+          }
+        }
     }
-    val record = labelledGen.to(a1)
-    import shapeless.record._
-    assert(record(Symbol("x")) == 2)
-    assert(record(Symbol("y")) == "a")
-    assert(record(Symbol("z")) == JavaList.of("b", "c"))
-    val a2 = labelledGen.from(record)
-    assert(a1 == a2)
   }
 
-  @Test
-  def labelledGenericStringTest: Unit = {
-    val labelledGen = {
-      import JavaRecordGeneric._
-      import JavaRecordGeneric.string._
-      LabelledGeneric[foo.A]
-    }
-    val record = labelledGen.to(a1)
-    import shapeless.record._
-    assert(record("x") == 2)
-    assert(record("y") == "a")
-    assert(record("z") == JavaList.of("b", "c"))
-    val a2 = labelledGen.from(record)
-    assert(a1 == a2)
-  }
-
-  @Test
-  def labelledGenericSealed: Unit = {
-    val gen = {
-      import JavaRecordGeneric._
-      import JavaRecordGeneric.string._
-      LabelledGeneric[foo.Base]
-    }
-    val x = gen.to(a1)
-    typed[shapeless.union.Union.`"A" -> foo.A, "B" -> foo.B`.T](x)
-    import shapeless.union._
-    assert(x.get("A") == Some(a1))
-    assert(x.get("B") == None)
-  }
 }
+
