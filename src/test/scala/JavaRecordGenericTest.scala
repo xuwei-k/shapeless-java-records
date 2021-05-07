@@ -27,25 +27,22 @@ object JavaRecordGenericTest {
     println(x)
     def c(s: String): Type[?] = ConstantType(StringConstant(s)).asType
 
-    val util = new shapeless3.deriving.ReflectionUtils(q)
-
+    val tupleClass = TypeRepr.typeConstructorOf(Class.forName("scala.Tuple" + subClasses.size.toString))
+    val tupleApplied = tupleClass.appliedTo(subClasses.map(x => TypeRepr.typeConstructorOf(Class.forName(x))))
 
     c(name.split('.').last).match {
       case '[t] =>
-        TypeRepr.typeConstructorOf(Class.forName(subClasses.head)).asType match {
-          case '[a1] =>
-            TypeRepr.typeConstructorOf(Class.forName(subClasses.last)).asType match {
-              case '[a2] =>
-               '{
-                 new scala.deriving.Mirror.Sum {
-                   def ordinal(p: MirroredMonoType): Int = 0
-                   type Kind = K0.type
-                   type MirroredType = A
-                   type MirroredElemTypes = (a1, a2)
-                 } : K0.CoproductGeneric[A]  {
-                   type MirroredElemTypes = (a1, a2)
-                 }
-               }
+        tupleApplied.asType match {
+          case '[elems] =>
+            '{
+              new scala.deriving.Mirror.Sum {
+                def ordinal(p: MirroredMonoType): Int = 0
+                type Kind = K0.type
+                type MirroredType = A
+                type MirroredElemTypes = elems
+              } : K0.CoproductGeneric[A]  {
+                type MirroredElemTypes = elems
+              }
             }
         }
     }
