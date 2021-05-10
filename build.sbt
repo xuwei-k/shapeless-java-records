@@ -11,7 +11,7 @@ scalaVersion := Scala213
 
 crossScalaVersions := Seq(Scala213, "2.12.13")
 
-libraryDependencies += "com.chuusai" %% "shapeless" % "2.3.5"
+libraryDependencies += "com.chuusai" %% "shapeless" % "2.3.6"
 libraryDependencies += scalaOrganization.value % "scala-reflect" % scalaVersion.value
 libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
 
