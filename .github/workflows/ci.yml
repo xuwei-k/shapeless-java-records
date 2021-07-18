@@ -20,6 +20,6 @@ jobs:
         distribution: adopt
     - uses: coursier/cache-action@v6
     - name: install sbt
-      run: curl -Ls https://git.io/sbt > ./sbt && chmod 0755 ./sbt
+      run: curl -Ls https://raw.githubusercontent.com/dwijnand/sbt-extras/master/sbt > ./sbt && chmod 0755 ./sbt
     - name: test
-      run: ./sbt -v -J--enable-preview "+scalafmtCheckAll" scalafmtSbtCheck +test
+      run: ./sbt -v "+scalafmtCheckAll" scalafmtSbtCheck +test
