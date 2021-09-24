@@ -8,6 +8,7 @@
 - `build.sbt`
 
 ```scala
+// if jdk 15 or 16
 javacOptions ++= Seq("--enable-preview", "--release", scala.util.Properties.javaSpecVersion)
 
 scalaVersion := // 2.12.x or 2.13.x
