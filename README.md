@@ -1,6 +1,6 @@
 # shapeless java records
 
-[![scaladoc](https://javadoc-badge.appspot.com/com.github.xuwei-k/shapeless-java-records_2.13.svg?label=scaladoc)](https://javadoc-badge.appspot.com/com.github.xuwei-k/shapeless-java-records_2.13/shapeless/JavaRecordGeneric.html?javadocio=true)
+[![scaladoc](https://javadoc.io/badge2/com.github.xuwei-k/shapeless-java-records_2.13/javadoc.svg)](https://javadoc.io/doc/com.github.xuwei-k/shapeless-java-records_2.13)
 
 ## setup
 
