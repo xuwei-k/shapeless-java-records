@@ -1,16 +1,28 @@
 name: scala-steward
 
 on:
+  push:
+    branches: [ main ]
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 7 * * *'
 
 jobs:
   scala-steward:
     runs-on: ubuntu-latest
-    name: Launch Scala Steward
     steps:
-      - name: Launch Scala Steward
-        if: ${{ !github.event.repository.fork }}
-        uses: scala-steward-org/scala-steward-action@v2.16.0
-        with:
-          github-token: ${{ secrets.ADMIN_GITHUB_TOKEN }}
+    - uses: actions/setup-java@v3
+      with:
+        distribution: adopt
+        java-version: 17
+    - id: generate_token
+      if: ${{ !github.event.repository.fork }}
+      uses: tibdex/github-app-token@v1
+      with:
+        app_id: 89536
+        private_key: ${{ secrets.XUWEI_K_BOT_KEY }}
+    - uses: scala-steward-org/scala-steward-action@v2
+      if: ${{ !github.event.repository.fork }}
+      with:
+        github-token: ${{ steps.generate_token.outputs.token }}
+        author-email: "74788111+xuwei-k-bot[bot]@users.noreply.github.com"
+        author-name: xuwei-k-bot[bot]
