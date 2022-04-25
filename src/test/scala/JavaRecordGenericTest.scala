@@ -6,13 +6,13 @@ import scala.deriving.Mirror.ProductOf
 import shapeless.JavaRecordGeneric
 
 class JavaRecordGenericTest {
-  private val a1 = new foo.A(2, "a", JavaList.of("b", "c"))
+  private val a1 = new foo.A[Long](2, Long.MaxValue, "x", JavaList.of("b", "c"))
 
   private def typed[A](a: A): Unit = ()
 
   @Test
   def test1: Unit = {
-    val mirror = JavaRecordGeneric.javaRecordMirror[foo.A]
+    val mirror = JavaRecordGeneric.javaRecordMirror[foo.A[Long]]
     val a2 = mirror.fromProduct((3, "b", JavaList.of("x1", "x2")))
     println(a2)
     typed[foo.A](a2)
@@ -22,7 +22,7 @@ class JavaRecordGenericTest {
   @Test
   def test2: Unit = {
     import JavaRecordGeneric.javaRecordMirror
-    val mirror = JavaRecordGeneric.javaRecordMirror[foo.Base]
+    val mirror = JavaRecordGeneric.javaRecordMirror[foo.Base[String]]
     val b1 = new foo.B(true, Long.MaxValue)
     summon[mirror.MirroredType =:= foo.Base]
     summon[mirror.MirroredMonoType =:= foo.Base]

@@ -1,12 +1,12 @@
 package shapeless
 
 import java.lang.constant.ClassDesc
-import java.lang.reflect.ParameterizedType
+import java.lang.reflect.{ParameterizedType, TypeVariable}
 import scala.deriving.Mirror
 import scala.quoted.Expr
 import scala.quoted.Quotes
 import scala.quoted.Type
-import scala.jdk.OptionConverters._
+import scala.jdk.OptionConverters.*
 
 final case class Parameterized(base: Class[?], params: List[Parameterized]) {
   def asScalaType(using q: Quotes): q.reflect.TypeRepr = {
@@ -22,16 +22,29 @@ final case class Parameterized(base: Class[?], params: List[Parameterized]) {
 object JavaRecordGeneric {
   transparent inline implicit def javaRecordMirror[A]: Any = ${ javaRecordMirrorImpl[A] }
 
+  extension [A](self: Type[A]) {
+    def getJavaClass(using q: Quotes): Class[?] = {
+      import q.reflect.*
+      val repr = TypeRepr.of[A](using self)
+      val name = repr match {
+        case a: AppliedType =>
+          a.tycon.show
+        case _ =>
+          repr.show
+      }
+      Class.forName(name)
+    }
+  }
+
   private def javaRecordMirrorImpl[A](using t: Type[A], q: Quotes) = {
     import q.reflect.*
-    val name = TypeRepr.of[A].show
-    val clazz = Class.forName(name)
+    val clazz = t.getJavaClass
     if (clazz.isRecord) {
       javaRecordImpl[A]
     } else if (clazz.isSealed) {
       javaSealedImpl[A]
     } else {
-      report.errorAndAbort(s"${name} is neither record nor sealed")
+      report.errorAndAbort(s"${TypeRepr.of[A].show} is neither record nor sealed")
     }
   }
 
@@ -41,6 +54,12 @@ object JavaRecordGeneric {
         Parameterized(clazz, Nil)
       case p: ParameterizedType =>
         Parameterized(p.getRawType.asInstanceOf[Class[?]], p.getActualTypeArguments.map(getParameterized).toList)
+      case v: TypeVariable[?] =>
+        println(v.getGenericDeclaration)
+        println(v.getName)
+        println(v.getTypeName)
+        println(v.getGenericDeclaration.getTypeParameters.toList)
+        sys.error(s"Does not support TypeVariable")
       case other =>
         sys.error(s"Does not support ${other.getClass}")
     }
@@ -48,8 +67,7 @@ object JavaRecordGeneric {
 
   def javaRecordImpl[A](using a: Type[A], q: Quotes) = {
     import q.reflect.*
-    val name: String = TypeRepr.of[A].show
-    val clazz = Class.forName(name)
+    val clazz = a.getJavaClass
     val components = clazz.getRecordComponents.toList
     val tupleClass = TypeRepr.typeConstructorOf(Class.forName("scala.Tuple" + components.size.toString))
     val parameterized = components.map(c => getParameterized(c.getGenericType))
@@ -81,7 +99,7 @@ object JavaRecordGeneric {
   def javaSealedImpl[A](using a: Type[A], q: Quotes) = {
     import q.reflect.*
     val name = TypeRepr.of[A].show
-    val clazz = Class.forName(name)
+    val clazz = a.getJavaClass
     val subClasses = clazz.getPermittedSubclasses
       .flatMap(_.describeConstable.toScala)
       .map { desc =>
