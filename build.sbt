@@ -7,13 +7,15 @@ name := "shapeless-java-records"
 
 val Scala213 = "2.13.8"
 
-scalaVersion := Scala213
+scalaVersion := "3.1.3-RC2"
 
 crossScalaVersions := Seq(Scala213, "2.12.15")
 
 libraryDependencies ++= {
   if (scalaBinaryVersion.value == "3") {
-    Nil
+    Seq(
+      scalaOrganization.value %% "scala3-compiler" % scalaVersion.value % Provided
+    )
   } else {
     Seq(
       "com.chuusai" %% "shapeless" % "2.3.9",
