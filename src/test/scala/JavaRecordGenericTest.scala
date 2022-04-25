@@ -13,6 +13,9 @@ class JavaRecordGenericTest {
   @Test
   def sealedTest1: Unit = {
     val a = JavaRecordGeneric.javaRecordMirror[foo.A]
+    val a2 = a.fromProduct((3, "b", JavaList.of("x1", "x2")))
+    println(a2)
+    assert(a2 == new foo.A(3, "b", JavaList.of("x1", "x2")))
   }
 
 }

@@ -53,7 +53,7 @@ object JavaRecordGeneric {
 
   def javaRecordImpl[A](using a: Type[A], q: Quotes) = {
     import q.reflect.*
-    val name = TypeRepr.of[A].show
+    val name: String = TypeRepr.of[A].show
     val clazz = Class.forName(name)
     val components = clazz.getRecordComponents.toList
     val tupleClass = TypeRepr.typeConstructorOf(Class.forName("scala.Tuple" + components.size.toString))
@@ -61,15 +61,19 @@ object JavaRecordGeneric {
     val tupleApplied = tupleClass.appliedTo(parameterized.map(_.asScalaType)).asType
     val Array(constructor) = clazz.getConstructors
 
-    val expr = tupleApplied match {
+    tupleApplied match {
       case '[elems] =>
         // println(TypeRepr.of[elems].show)
 
         '{
-          new scala.deriving.Mirror.Product {
+          new Mirror.Product {
             override def fromProduct(p: Product) = {
-              constructor.newInstance(p.productIterator.toArray: _*).asInstanceOf[MirroredMonoType]
-              ???
+              Class
+                .forName(${ Expr(name) })
+                .getConstructors
+                .head
+                .newInstance(p.productIterator.toArray: _*)
+                .asInstanceOf[MirroredMonoType]
             }
           }.asInstanceOf[
             Mirror.Product {
@@ -80,8 +84,6 @@ object JavaRecordGeneric {
           ]
         }
     }
-
-    expr
   }
 
   def javaSealedImpl[A](using a: Type[A], q: Quotes): Expr[Mirror.SumOf[A]] = {
