@@ -19,8 +19,8 @@ class JavaRecordGenericTest {
     val b1 = new foo.B(true, Long.MaxValue)
     val coproductA = gen.to(a1)
     val coproductB = gen.to(b1)
-    typed[foo.A :+: foo.B :+: shapeless.CNil](coproductA)
-    typed[foo.A :+: foo.B :+: shapeless.CNil](coproductB)
+    typed[foo.A[Int] :+: foo.B :+: shapeless.CNil](coproductA)
+    typed[foo.A[Int] :+: foo.B :+: shapeless.CNil](coproductB)
     assert(gen.from(coproductA) == a1)
     assert(gen.from(coproductB) == b1)
   }
@@ -28,7 +28,7 @@ class JavaRecordGenericTest {
   @Test
   def genericTest1: Unit = {
     import JavaRecordGeneric._
-    val gen = Generic[foo.A]
+    val gen = Generic[foo.A[Int]]
     val list = gen.to(a1)
     assert(list(0) == 2)
     assert(list(1) == "a")
@@ -44,7 +44,7 @@ class JavaRecordGenericTest {
     val labelledGen = {
       import JavaRecordGeneric._
       import JavaRecordGeneric.symbol._
-      LabelledGeneric[foo.A]
+      LabelledGeneric[foo.A[Int]]
     }
     val record = labelledGen.to(a1)
     import shapeless.record._
@@ -60,7 +60,7 @@ class JavaRecordGenericTest {
     val labelledGen = {
       import JavaRecordGeneric._
       import JavaRecordGeneric.string._
-      LabelledGeneric[foo.A]
+      LabelledGeneric[foo.A[Int]]
     }
     val record = labelledGen.to(a1)
     import shapeless.record._
