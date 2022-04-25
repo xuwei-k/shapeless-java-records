@@ -63,10 +63,7 @@ object JavaRecordGeneric {
         '{
           new Mirror.Product {
             override def fromProduct(p: Product) = {
-              Class
-                .forName(${ Expr(name) })
-                .getConstructors
-                .head
+              ${ Expr(clazz) }.getConstructors.head
                 .newInstance(p.productIterator.toArray: _*)
                 .asInstanceOf[MirroredMonoType]
             }
@@ -97,12 +94,12 @@ object JavaRecordGeneric {
     tupleApplied match {
       case '[elems] =>
         // println(TypeRepr.of[elems].show)
+        val subClazz = subClasses.map(Class.forName(_))
 
         '{
           new Mirror.Sum {
-            private[this] val classes: List[Class[?]] = ${ Expr(subClasses) }.map(Class.forName(_))
             override def ordinal(p: MirroredMonoType) = {
-              classes.indexOf(p.getClass)
+              ${ Expr(subClazz) }.indexOf(p.getClass)
             }
           }.asInstanceOf[
             Mirror.Sum {
