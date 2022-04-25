@@ -57,10 +57,29 @@ class JavaRecordGeneric(val c: whitebox.Context)
   def stringImpl[A: c.WeakTypeTag]: c.Tree =
     defaultSymbolicLabellingImpl[A](StringKey)
 
+  private[this] implicit class TypeOps(self: c.Type) {
+    def getTypeArgs: List[Type] = {
+      self match {
+        case TypeRef(_, sym, args) =>
+          args
+        case _ =>
+          Nil
+      }
+    }
+    def asJavaClass: Class[_] = {
+      val name = self match {
+        case TypeRef(_, sym, args) =>
+          sym.fullName
+        case t =>
+          t.toString
+      }
+      Class.forName(name)
+    }
+  }
+
   private def defaultSymbolicLabellingImpl[A](keyType: KeyType)(implicit tTag: c.WeakTypeTag[A]): c.Tree = {
     val tpe = weakTypeOf[A]
-    val name = tpe.toString
-    val clazz = Class.forName(name)
+    val clazz = tpe.asJavaClass
 
     if (clazz.isSealed || clazz.isRecord) {
       val labels = {
@@ -96,15 +115,14 @@ class JavaRecordGeneric(val c: whitebox.Context)
       }) : _root_.shapeless.DefaultSymbolicLabelling.Aux[$tpe, $labelsType]
     """
     } else {
-      c.error(c.enclosingPosition, s"$name is neither record nor sealed")
+      c.error(c.enclosingPosition, s"${clazz.getName} is neither record nor sealed")
       q"_root_.scala.Predef.???"
     }
   }
 
   def genericSealedImpl[A: c.WeakTypeTag]: c.Tree = {
     val tpe = weakTypeOf[A]
-    val name = tpe.toString
-    val clazz = Class.forName(name)
+    val clazz = tpe.asJavaClass
 
     val subTypes = clazz.getPermittedSubClassDescList.map { subClassDesc =>
       val subClassName = subClassDesc.packageName + "." + subClassDesc.displayName
@@ -137,24 +155,20 @@ class JavaRecordGeneric(val c: whitebox.Context)
   }
 
   def genericImpl[A: c.WeakTypeTag]: c.Tree = {
-    val tpe = weakTypeOf[A]
-    val name = tpe.toString
-    val clazz = Class.forName(name)
+    val clazz = weakTypeOf[A].asJavaClass
 
     if (clazz.isSealed) {
       genericSealedImpl[A]
     } else if (clazz.isRecord) {
       genericRecordImpl(weakTypeOf[A])
     } else {
-      c.error(c.enclosingPosition, s"$name is neither record nor sealed")
+      c.error(c.enclosingPosition, s"${clazz.getName} is neither record nor sealed")
       q"_root_.scala.Predef.???"
     }
   }
   def genericRecordImpl(tpe: Type): c.Tree = {
     case class Field(name: String, method: MethodSymbol)
-
-    val name = tpe.toString
-    val clazz = Class.forName(name)
+    val clazz = tpe.asJavaClass
 
     val methodsList = tpe.decls.collect {
       case sym: MethodSymbol if sym.isMethod && sym.isPublic && sym.paramLists.forall(_.isEmpty) =>
