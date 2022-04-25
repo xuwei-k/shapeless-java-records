@@ -5,12 +5,24 @@ import dotty.tools.dotc.core.Contexts.Context
 import dotty.tools.dotc.typer.Synthesizer
 import dotty.tools.dotc.transform.SyntheticMembers
 import java.lang.constant.ClassDesc
+import java.lang.reflect.ParameterizedType
 import scala.deriving.Mirror
 import scala.quoted.Expr
 import scala.quoted.Quotes
 import scala.quoted.Type
 import scala.jdk.OptionConverters._
 import scala.quoted.runtime.impl.QuotesImpl
+
+final case class Parameterized(base: Class[?], params: List[Parameterized]) {
+  def asScalaType(using q: Quotes): q.reflect.TypeRepr = {
+    val x = q.reflect.TypeRepr.typeConstructorOf(base)
+    if (params.isEmpty) {
+      x
+    } else {
+      x.appliedTo(params.map(_.asScalaType))
+    }
+  }
+}
 
 object JavaRecordGeneric {
   transparent inline implicit def javaRecordMirror[A]: Any = ${ javaRecordMirrorImpl[A] }
@@ -28,41 +40,35 @@ object JavaRecordGeneric {
     }
   }
 
+  private def getParameterized(t: java.lang.reflect.Type): Parameterized = {
+    t match {
+      case clazz: Class[?] =>
+        Parameterized(clazz, Nil)
+      case p: ParameterizedType =>
+        Parameterized(p.getRawType.asInstanceOf[Class[?]], p.getActualTypeArguments.map(getParameterized).toList)
+      case other =>
+        sys.error(s"Does not support ${other.getClass}")
+    }
+  }
+
   def javaRecordImpl[A](using a: Type[A], q: Quotes) = {
     import q.reflect.*
     val name = TypeRepr.of[A].show
     val clazz = Class.forName(name)
     val components = clazz.getRecordComponents.toList
     val tupleClass = TypeRepr.typeConstructorOf(Class.forName("scala.Tuple" + components.size.toString))
-    // TODO use `getGenericType`
-    val tupleApplied = tupleClass.appliedTo(components.map(x => TypeRepr.typeConstructorOf(x.getType))).asType
+    val parameterized = components.map(c => getParameterized(c.getGenericType))
+    val tupleApplied = tupleClass.appliedTo(parameterized.map(_.asScalaType)).asType
     val Array(constructor) = clazz.getConstructors
-    if (false) {
-      val quotesImpl = q.asInstanceOf[QuotesImpl]
-      implicit val ctx: Context = quotesImpl.ctx
-      val s = new Synthesizer(ctx.typer)
-      val Some(anonymousMirror) = classOf[Synthesizer].getDeclaredMethods.find(_.getName == "anonymousMirror")
-      anonymousMirror.setAccessible(true)
-      val span = TypeTree.of[A].asInstanceOf[tpd.Tree].span
-      println(anonymousMirror)
-      //    println((s, TypeRepr.of[A], SyntheticMembers.ExtendsSumMirror, span, ctx))
-      println(List(s, TypeRepr.of[A], SyntheticMembers.ExtendsSumMirror, span, ctx).map(_.getClass))
-      // https://github.com/lampepfl/dotty/blob/3.1.3-RC2/compiler/src/dotty/tools/dotc/typer/Synthesizer.scala#L224
-      val tree =
-        anonymousMirror
-          .invoke(s, TypeRepr.of[A], SyntheticMembers.ExtendsSumMirror, span.coords, ctx)
-          .asInstanceOf[Tree]
-      tree.asExprOf[Mirror.ProductOf[A]]
-    }
 
     val expr = tupleApplied match {
       case '[elems] =>
-        println(TypeRepr.of[elems])
+        // println(TypeRepr.of[elems].show)
 
         '{
           new scala.deriving.Mirror.Product {
             override def fromProduct(p: Product) = {
-              // constructor.newInstance(p.productIterator.toArray: _*).asInstanceOf[MirroredMonoType]
+              constructor.newInstance(p.productIterator.toArray: _*).asInstanceOf[MirroredMonoType]
               ???
             }
           }.asInstanceOf[
