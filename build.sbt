@@ -11,8 +11,17 @@ scalaVersion := Scala213
 
 crossScalaVersions := Seq(Scala213, "2.12.15")
 
-libraryDependencies += "com.chuusai" %% "shapeless" % "2.3.9"
-libraryDependencies += scalaOrganization.value % "scala-reflect" % scalaVersion.value
+libraryDependencies ++= {
+  if (scalaBinaryVersion.value == "3") {
+    Nil
+  } else {
+    Seq(
+      "com.chuusai" %% "shapeless" % "2.3.9",
+      scalaOrganization.value % "scala-reflect" % scalaVersion.value,
+    )
+  }
+}
+
 libraryDependencies += "com.github.sbt" % "junit-interface" % "0.13.3" % "test"
 
 // https://github.com/scala/bug/issues/11908
