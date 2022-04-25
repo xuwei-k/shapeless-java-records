@@ -14,7 +14,7 @@ crossScalaVersions := Seq(Scala213, "2.12.15")
 libraryDependencies ++= {
   if (scalaBinaryVersion.value == "3") {
     Seq(
-      scalaOrganization.value %% "scala3-compiler" % scalaVersion.value % Provided
+      "org.typelevel" %% "shapeless3-deriving" % "3.0.4"
     )
   } else {
     Seq(

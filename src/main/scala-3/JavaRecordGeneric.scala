@@ -1,9 +1,5 @@
 package shapeless
 
-import dotty.tools.dotc.ast.tpd
-import dotty.tools.dotc.core.Contexts.Context
-import dotty.tools.dotc.typer.Synthesizer
-import dotty.tools.dotc.transform.SyntheticMembers
 import java.lang.constant.ClassDesc
 import java.lang.reflect.ParameterizedType
 import scala.deriving.Mirror
@@ -11,7 +7,6 @@ import scala.quoted.Expr
 import scala.quoted.Quotes
 import scala.quoted.Type
 import scala.jdk.OptionConverters._
-import scala.quoted.runtime.impl.QuotesImpl
 
 final case class Parameterized(base: Class[?], params: List[Parameterized]) {
   def asScalaType(using q: Quotes): q.reflect.TypeRepr = {
@@ -86,7 +81,7 @@ object JavaRecordGeneric {
     }
   }
 
-  def javaSealedImpl[A](using a: Type[A], q: Quotes): Expr[Mirror.SumOf[A]] = {
+  def javaSealedImpl[A](using a: Type[A], q: Quotes) = {
     import q.reflect.*
     val name = TypeRepr.of[A].show
     val clazz = Class.forName(name)
@@ -98,9 +93,25 @@ object JavaRecordGeneric {
       .toList
     val tupleClass = TypeRepr.typeConstructorOf(Class.forName("scala.Tuple" + subClasses.size.toString))
     val tupleApplied = tupleClass.appliedTo(subClasses.map(x => TypeRepr.typeConstructorOf(Class.forName(x)))).asType
+
     tupleApplied match {
       case '[elems] =>
-        ???
+        // println(TypeRepr.of[elems].show)
+
+        '{
+          new Mirror.Sum {
+            private[this] val classes: List[Class[?]] = ${ Expr(subClasses) }.map(Class.forName(_))
+            override def ordinal(p: MirroredMonoType) = {
+              classes.indexOf(p.getClass)
+            }
+          }.asInstanceOf[
+            Mirror.Sum {
+              type MirroredType = A
+              type MirroredMonoType = A
+              type MirroredElemTypes = elems
+            }
+          ]
+        }
     }
   }
 }
