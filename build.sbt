@@ -37,7 +37,7 @@ licenses := Seq(
 
 description := "derive shapeless.Generic instances for Java Records and Sealed Classes"
 
-pomExtra := (
+pomExtra :=
   <developers>
     <developer>
       <id>xuwei-k</id>
@@ -49,7 +49,6 @@ pomExtra := (
     <url>git@github.com:xuwei-k/shapeless-java-records.git</url>
     <connection>scm:git:git@github.com:xuwei-k/shapeless-java-records.git</connection>
   </scm>
-)
 
 publishTo := sonatypePublishToBundle.value
 
@@ -69,7 +68,7 @@ releaseProcess := Seq[ReleaseStep](
   pushChanges,
 )
 
-(Compile / doc / scalacOptions) ++= {
+Compile / doc / scalacOptions ++= {
   val hash = sys.process.Process("git rev-parse HEAD").lineStream_!.head
   val base = (LocalRootProject / baseDirectory).value.getAbsolutePath
   Seq(
