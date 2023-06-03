@@ -5,11 +5,11 @@ javacOptions ++= Seq("--enable-preview", "--release", scala.util.Properties.java
 organization := "com.github.xuwei-k"
 name := "shapeless-java-records"
 
-val Scala213 = "2.13.10"
+val Scala213 = "2.13.11"
 
 scalaVersion := Scala213
 
-crossScalaVersions := Seq(Scala213, "2.12.17")
+crossScalaVersions := Seq(Scala213, "2.12.18")
 
 libraryDependencies ++= {
   if (scalaBinaryVersion.value == "3") {
