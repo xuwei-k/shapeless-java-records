@@ -27,7 +27,10 @@ libraryDependencies += "com.github.sbt" % "junit-interface" % "0.13.3" % "test"
 // https://github.com/scala/bug/issues/11908
 compileOrder := CompileOrder.JavaThenScala
 
-scalacOptions += "-deprecation"
+scalacOptions ++= Seq(
+  "-deprecation",
+  "-Xsource:3",
+)
 
 homepage := Some(url("https://github.com/xuwei-k/shapeless-java-records"))
 
