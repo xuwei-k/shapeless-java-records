@@ -9,7 +9,7 @@ val Scala213 = "2.13.13"
 
 scalaVersion := Scala213
 
-crossScalaVersions := Seq(Scala213, "2.12.18")
+crossScalaVersions := Seq(Scala213, "2.12.19")
 
 libraryDependencies ++= {
   if (scalaBinaryVersion.value == "3") {
