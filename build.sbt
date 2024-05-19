@@ -16,7 +16,7 @@ libraryDependencies ++= {
     Nil
   } else {
     Seq(
-      "com.chuusai" %% "shapeless" % "2.3.11",
+      "com.chuusai" %% "shapeless" % "2.3.12",
       scalaOrganization.value % "scala-reflect" % scalaVersion.value,
     )
   }
