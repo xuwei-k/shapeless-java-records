@@ -54,7 +54,7 @@ pomExtra := (
   </scm>
 )
 
-publishTo := sonatypePublishToBundle.value
+publishTo := (if (isSnapshot.value) None else localStaging.value)
 
 releaseCrossBuild := true
 releaseProcess := Seq[ReleaseStep](
@@ -66,7 +66,7 @@ releaseProcess := Seq[ReleaseStep](
   commitReleaseVersion,
   tagRelease,
   releaseStepCommandAndRemaining("+publishSigned"),
-  releaseStepCommandAndRemaining("sonatypeBundleRelease"),
+  releaseStepCommandAndRemaining("sonaRelease"),
   setNextVersion,
   commitNextVersion,
   pushChanges,
