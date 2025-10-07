@@ -5,7 +5,7 @@ javacOptions ++= Seq("--enable-preview", "--release", scala.util.Properties.java
 organization := "com.github.xuwei-k"
 name := "shapeless-java-records"
 
-val Scala213 = "2.13.16"
+val Scala213 = "2.13.17"
 
 scalaVersion := Scala213
 
