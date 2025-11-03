@@ -18,7 +18,7 @@ jobs:
         java-version: ${{matrix.java}}
         check-latest: true
         distribution: adopt
-    - uses: coursier/cache-action@v6
+    - uses: coursier/cache-action@v7
     - uses: sbt/setup-sbt@v1
     - name: test
       run: sbt -v "+scalafmtCheckAll" scalafmtSbtCheck +test
