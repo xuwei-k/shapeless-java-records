@@ -1,7 +1,5 @@
 import ReleaseTransformations._
 
-javacOptions ++= Seq("--enable-preview", "--release", scala.util.Properties.javaSpecVersion)
-
 organization := "com.github.xuwei-k"
 name := "shapeless-java-records"
 
