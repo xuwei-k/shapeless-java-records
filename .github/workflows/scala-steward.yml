@@ -1,6 +1,7 @@
 name: scala-steward
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
   schedule:
