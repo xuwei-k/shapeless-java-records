@@ -30,10 +30,10 @@ scalacOptions ++= Seq(
   "-Xsource:3",
 )
 
-homepage := Some(url("https://github.com/xuwei-k/shapeless-java-records"))
+homepage := Some(uri("https://github.com/xuwei-k/shapeless-java-records"))
 
 licenses := Seq(
-  "MIT License" -> url("https://raw.githubusercontent.com/xuwei-k/shapeless-java-records/main/LICENSE.txt"),
+  "MIT License" -> uri("https://raw.githubusercontent.com/xuwei-k/shapeless-java-records/main/LICENSE.txt"),
 )
 
 description := "derive shapeless.Generic instances for Java Records and Sealed Classes"
