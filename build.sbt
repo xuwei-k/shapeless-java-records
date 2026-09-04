@@ -3,7 +3,7 @@ import ReleaseTransformations._
 organization := "com.github.xuwei-k"
 name := "shapeless-java-records"
 
-val Scala213 = "2.13.18"
+val Scala213 = "3.9.0"
 
 scalaVersion := Scala213
 
